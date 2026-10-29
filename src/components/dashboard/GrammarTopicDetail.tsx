@@ -2,15 +2,15 @@ import { ArrowLeft, BookOpen, ClipboardList } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { GrammarTopic } from '../../data/grammarTopics'
 
-export default function GrammarTopicDetail({ topic, onClose }: { topic: GrammarTopic; onClose: () => void }) {
+export default function GrammarTopicDetail({ topic, folderTitle, onClose }: { topic: GrammarTopic; folderTitle: string; onClose: () => void }) {
   return (
     <article className="mb-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <button onClick={onClose} className="mb-3 inline-flex min-h-9 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-blue-700 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-            <ArrowLeft className="h-4 w-4" /> Tất cả chủ đề
+            <ArrowLeft className="h-4 w-4" /> Danh sách {folderTitle}
           </button>
-          <p className="text-xs font-semibold uppercase tracking-wide text-violet-700">{topic.section} · {topic.level}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-violet-700">{folderTitle} · {topic.level}</p>
           <h2 className="mt-1 text-xl font-bold text-gray-900 sm:text-2xl">{topic.title}</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-gray-600">{topic.explanation}</p>
         </div>

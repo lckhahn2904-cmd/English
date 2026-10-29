@@ -49,7 +49,7 @@ function App() {
               <Route path="courses" element={<CoursesPage />} />
               <Route path="vocabulary" element={<VocabularyPage />} />
               <Route path="grammar" element={<GrammarPage />} />
-              <Route path="grammar/:tenseId" element={<GrammarTensePage />} />
+              <Route path="grammar/:topicId" element={<GrammarTensePage />} />
               <Route path="speaking" element={<SpeakingPage />} />
               <Route path="exercises" element={<ExercisesPage />} />
               <Route path="settings" element={<SettingsPage />} />

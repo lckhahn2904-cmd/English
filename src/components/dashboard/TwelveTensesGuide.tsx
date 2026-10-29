@@ -1,4 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import InteractiveExerciseBlock from './InteractiveExerciseBlock'
+import type { TensePracticeExercise } from '../../data/twelveTensePractice'
 
 type Tense = {
   id: string; en: string; vi: string; family: string; use: string[]; signs: string
@@ -50,12 +53,48 @@ const whCShapes: Record<string, string> = {
   'future-simple':'Wh-word + will + S + V1 + ...?', 'future-continuous':'Wh-word + will + S + be + V-ing + ...?', 'future-perfect':'Wh-word + will + S + have + V3 + ...?', 'future-perfect-continuous':'Wh-word + will + S + have + been + V-ing + ...?',
 }
 
+function BilingualExample({ text }: { text: string }) {
+  const parts = text.split(/\s+[—–]\s+/, 2)
+  const hasVietnamese = parts.length === 2 && /[ăâđêôơưáàảãạấầẩẫậắằẳẵặéèẻẽẹếềểễệíìỉĩịóòỏõọốồổỗộớờởỡợúùủũụứừửữựýỳỷỹỵ]/i.test(parts[1])
+  if (!hasVietnamese) return <span className="font-medium text-gray-900">{text}</span>
+  return <span className="block"><span className="block font-semibold text-gray-900">{parts[0]}</span><span className="mt-1 block text-[15px] font-normal leading-6 text-gray-600">{parts[1]}</span></span>
+}
+
 function FormulaTable({ rows, headers }: { rows: string[][]; headers: string[] }) {
-  return <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full min-w-[650px] border-collapse text-left text-sm"><thead className="bg-gray-50 text-gray-700"><tr>{headers.map((h) => <th key={h} className="p-3 font-semibold">{h}</th>)}</tr></thead><tbody>{rows.map((row, i) => <tr key={i} className="border-t border-gray-100 align-top">{row.map((cell, j) => <td key={j} className={`p-3 ${j === 0 ? 'font-medium text-gray-800' : 'font-mono text-xs leading-5 text-violet-950'}`}>{cell}</td>)}</tr>)}</tbody></table></div>
+  const isFormulaColumn = (header: string) => /công thức|khẳng định|phủ định|nghi vấn|yes\/no|đơn|tiếp diễn|hoàn thành/i.test(header)
+  const headerColor = (index: number) => headers.length >= 4 ? (index === 1 ? 'text-blue-700' : index === 2 ? 'text-red-700' : index === 3 ? 'text-emerald-700' : 'text-gray-700') : 'text-gray-700'
+  return <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full min-w-[650px] border-collapse text-left text-sm"><thead className="bg-gray-50 text-gray-700"><tr>{headers.map((h, index) => <th key={h} className={`bg-gray-50 p-4 font-semibold ${headerColor(index)}`}>{h}</th>)}</tr></thead><tbody>{rows.map((row, i) => <tr key={i} className="border-t border-gray-100 align-top">{row.map((cell, j) => <td key={j} className={`p-4 ${j === 0 ? 'font-medium text-gray-800' : isFormulaColumn(headers[j]) ? 'whitespace-normal break-words font-mono text-base leading-7 text-blue-950 italic' : 'whitespace-normal break-words text-base leading-6 font-medium text-gray-900'}`}>{j > 0 && /ví dụ/i.test(headers[j]) ? <BilingualExample text={cell} /> : cell}</td>)}</tr>)}</tbody></table></div>
+}
+
+function ExampleCard({ label = 'Ví dụ Anh–Việt', english, vietnamese }: { label?: string; english: string; vietnamese: string }) {
+  return <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+    <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">{label}</p>
+    <p className="mt-2 text-[17px] font-semibold leading-7 text-gray-900">{english}</p>
+    <p className="mt-1.5 text-base leading-6 text-gray-700">{vietnamese}</p>
+  </div>
+}
+
+function FormulaCards({ rows }: { rows: { label: string; formula: string; example: string }[] }) {
+  const labelColors = ['text-blue-700', 'text-red-700', 'text-emerald-700']
+  const accents = ['border-blue-200 bg-blue-50/70 text-blue-800', 'border-rose-200 bg-rose-50/60 text-rose-800', 'border-emerald-200 bg-emerald-50/60 text-emerald-800']
+  return <div className="grid gap-3 md:grid-cols-3">{rows.map((row, index) => <section key={row.label} className={`min-w-0 rounded-xl border p-4 ${accents[index % accents.length]}`}>
+    <h4 className={`text-xs font-bold uppercase tracking-wide ${labelColors[index % labelColors.length]}`}>{row.label}</h4>
+    <p className="mt-2 break-words font-mono text-[17px] leading-[1.8] text-blue-950 italic">{row.formula}</p>
+    <p className="mt-3 border-t border-current/10 pt-2 text-base leading-6 text-gray-700"><BilingualExample text={row.example} /></p>
+  </section>)}</div>
 }
 
 export default function TwelveTensesGuide({ selectedTenseId, onClose }: { selectedTenseId: string; onClose: () => void }) {
+  const [practiceExercises, setPracticeExercises] = useState<TensePracticeExercise[] | null>(null)
   const t = tenses.find((tense) => tense.id === selectedTenseId)
+  useEffect(() => {
+    let current = true
+    setPracticeExercises(null)
+    import('../../data/twelveTensePractice').then(({ getTwelveTensePractice }) => {
+      if (current) setPracticeExercises(getTwelveTensePractice(selectedTenseId))
+    })
+    return () => { current = false }
+  }, [selectedTenseId])
   if (!t) return null
 
   return <article className="mb-6 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
@@ -68,16 +107,38 @@ export default function TwelveTensesGuide({ selectedTenseId, onClose }: { select
     </header>
     <div className="space-y-5">
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl bg-blue-50/60 p-4"><h3 className="text-sm font-bold text-gray-900">Cách dùng</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-5 text-gray-700">{t.use.map((item) => <li key={item}>{item}</li>)}</ul><p className="mt-3 text-sm"><b>Ví dụ:</b> {t.example} <span className="text-gray-600">{t.translation}</span></p></section>
+        <section className="rounded-xl bg-blue-50/60 p-4"><h3 className="text-sm font-bold text-gray-900">Cách dùng</h3><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-5 text-gray-700">{t.use.map((item) => <li key={item}>{item}</li>)}</ul><div className="mt-4"><ExampleCard english={t.example} vietnamese={t.translation} /></div></section>
         <aside className="rounded-xl border border-amber-100 bg-amber-50/60 p-4"><h3 className="text-sm font-bold text-gray-900">Dấu hiệu thường gặp</h3><p className="mt-2 text-sm leading-5 text-gray-700">{t.signs}</p><p className="mt-2 text-xs text-amber-900">Từ chỉ thời gian chỉ là gợi ý; hãy xét ý nghĩa và ngữ cảnh.</p></aside>
       </div>
-      <section><h3 className="mb-2 text-sm font-bold text-gray-900">Động từ thường · khẳng định, phủ định, nghi vấn</h3><FormulaTable headers={['Dạng câu','Công thức','Ví dụ']} rows={[[`Khẳng định (+)`,t.pos,t.positive],[`Phủ định (−)`,t.neg,t.negative],[`Yes/No (?)`,t.question,t.yesNo]]}/><p className="mt-2 text-xs text-gray-500">Trợ động từ trả lời ngắn: {t.aux}. Dùng đúng trợ động từ và chủ ngữ trong câu trả lời.</p></section>
-      <section className="rounded-xl border border-violet-100 bg-violet-50/40 p-4"><h3 className="text-sm font-bold text-gray-900">To be làm động từ chính</h3><p className="mt-1 text-sm text-gray-600">Dùng với danh tính/nghề nghiệp, tính chất, trạng thái hoặc nơi chốn; phân biệt với to be làm trợ động từ trong thì tiếp diễn.</p><div className="mt-3"><FormulaTable headers={['Dạng câu','Công thức','Ví dụ']} rows={[[`Khẳng định (+)`,t.bePos,t.beExample],[`Phủ định (−)`,t.beNeg,beNegativeExamples[t.id]],[`Yes/No (?)`,t.beQuestion,t.beTranslation]]}/></div>{t.beNote && <p className="mt-3 rounded-lg bg-white p-3 text-sm leading-5 text-amber-900">Ghi chú: {t.beNote}</p>}</section>
+      <section><h3 className="mb-2 text-sm font-bold text-gray-900">Động từ thường · khẳng định, phủ định, nghi vấn</h3><FormulaCards rows={[
+        { label: 'Khẳng định (+)', formula: t.pos, example: t.positive },
+        { label: 'Phủ định (−)', formula: t.neg, example: t.negative },
+        { label: 'Nghi vấn Yes/No (?)', formula: t.question, example: t.yesNo },
+      ]}/><p className="mt-2 text-xs text-gray-500">Trợ động từ trả lời ngắn: {t.aux}. Dùng đúng trợ động từ và chủ ngữ trong câu trả lời.</p></section>
+      <section className="rounded-xl border border-violet-100 bg-violet-50/40 p-4"><h3 className="text-sm font-bold text-gray-900">To be làm động từ chính</h3><p className="mt-1 text-sm text-gray-600">Dùng với danh tính/nghề nghiệp, tính chất, trạng thái hoặc nơi chốn; phân biệt với to be làm trợ động từ trong thì tiếp diễn.</p><div className="mt-3"><FormulaCards rows={[
+        { label: 'Khẳng định (+)', formula: t.bePos, example: t.beExample },
+        { label: 'Phủ định (−)', formula: t.beNeg, example: beNegativeExamples[t.id] },
+        { label: 'Nghi vấn Yes/No (?)', formula: t.beQuestion, example: t.beTranslation },
+      ]}/></div>{t.beNote && <p className="mt-3 rounded-lg bg-white p-3 text-sm leading-5 text-amber-900">Ghi chú: {t.beNote}</p>}</section>
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-4"><h3 className="text-sm font-bold text-gray-900">Wh- tìm A · hỏi chủ ngữ</h3><p className="mt-2 font-mono text-xs text-emerald-950">{whAShapes[t.id]}</p><p className="mt-2 text-sm font-semibold">Câu gốc: {t.subject}</p><p className="text-sm">{t.subjectQuestion} <span className="text-gray-500">— {t.subjectVi}</span></p><p className="text-sm text-gray-600">Trả lời: {t.subjectAnswer}</p></section>
-        <section className="rounded-xl border border-sky-100 bg-sky-50/40 p-4"><h3 className="text-sm font-bold text-gray-900">Wh- tìm C · hỏi tân ngữ/thông tin</h3><p className="mt-2 font-mono text-xs text-sky-950">{whCShapes[t.id]}</p><p className="mt-2 text-sm font-semibold">Câu gốc: {t.complement}</p><p className="text-sm">{t.complementQuestion} <span className="text-gray-500">— {t.complementVi}</span></p><p className="text-sm text-gray-600">Trả lời: {t.complementAnswer}</p></section>
+        <section className="min-w-0 rounded-xl border border-emerald-100 bg-emerald-50/60 p-4"><h3 className="text-sm font-bold text-gray-900">Wh- tìm A · hỏi chủ ngữ</h3><div className="mt-3 rounded-lg border border-emerald-100 bg-white/80 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-emerald-800">Công thức</p><p className="mt-1 break-words font-mono text-base leading-7 text-emerald-950 italic">{whAShapes[t.id]}</p></div><p className="mt-3 text-sm leading-6"><span className="font-semibold text-gray-700">Câu gốc:</span> <span className="font-medium text-gray-900">{t.subject}</span></p><p className="mt-2 text-base font-semibold leading-6 text-gray-900">{t.subjectQuestion}</p><p className="text-[15px] leading-6 text-gray-600">{t.subjectVi}</p><p className="mt-2 text-sm leading-6 text-gray-700"><span className="font-semibold">Trả lời:</span> {t.subjectAnswer}</p></section>
+        <section className="min-w-0 rounded-xl border border-sky-100 bg-sky-50/60 p-4"><h3 className="text-sm font-bold text-gray-900">Wh- tìm C · hỏi tân ngữ/thông tin</h3><div className="mt-3 rounded-lg border border-sky-100 bg-white/80 p-3"><p className="text-[11px] font-bold uppercase tracking-wide text-sky-800">Công thức</p><p className="mt-1 break-words font-mono text-base leading-7 text-sky-950 italic">{whCShapes[t.id]}</p></div><p className="mt-3 text-sm leading-6"><span className="font-semibold text-gray-700">Câu gốc:</span> <span className="font-medium text-gray-900">{t.complement}</span></p><p className="mt-2 text-base font-semibold leading-6 text-gray-900">{t.complementQuestion}</p><p className="text-[15px] leading-6 text-gray-600">{t.complementVi}</p><p className="mt-2 text-sm leading-6 text-gray-700"><span className="font-semibold">Trả lời:</span> {t.complementAnswer}</p></section>
       </div>
       <aside className="rounded-xl border border-orange-100 bg-orange-50/50 p-4"><h3 className="text-sm font-bold text-gray-900">Ghi nhớ và lỗi thường gặp</h3><p className="mt-2 text-sm leading-5 text-gray-700">{t.note}</p><p className="mt-2 text-sm"><b>Phân biệt:</b> Tìm A: <i>Who called you?</i> — Ai đã gọi cho bạn? Tìm C: <i>Who did you call?</i> — Bạn đã gọi cho ai? Khi Who/What thay chủ ngữ, không máy móc thêm do/does/did.</p></aside>
+      <section className="rounded-2xl border border-blue-100 bg-blue-50/40 p-4 sm:p-5" aria-label="Bài tập thực hành theo thì">
+        <div className="mb-4">
+          <h3 className="text-base font-bold text-gray-900">BÀI TẬP THỰC HÀNH — 30 CÂU</h3>
+          <p className="mt-1 text-sm leading-6 text-gray-600">Làm lần lượt ba phần. Mỗi câu có đáp án, giải thích và bản dịch; kết quả chỉ lưu trong phiên luyện tập này.</p>
+        </div>
+        <div className="mb-4 grid gap-2 sm:grid-cols-3">
+          {[
+            ['Phần A · Cơ bản', 'Câu 1–10'],
+            ['Phần B · Trung bình', 'Câu 11–20'],
+            ['Phần C · Nâng cao', 'Câu 21–30'],
+          ].map(([level, range]) => <div key={level} className="rounded-lg border border-white bg-white/80 p-3"><p className="text-sm font-semibold text-blue-900">{level}</p><p className="mt-0.5 text-xs text-gray-600">{range} · 10 câu</p></div>)}
+        </div>
+        {practiceExercises?.length === 30 ? <InteractiveExerciseBlock key={t.id} topicName={`${t.vi} · ${t.en}`} exercises={practiceExercises} /> : <p className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600" role="status">{practiceExercises === null ? 'Đang tải bộ câu hỏi từ tài liệu bài học…' : 'Bộ câu hỏi chưa đủ 30 câu; vui lòng kiểm tra tài liệu Markdown.'}</p>}
+      </section>
     </div>
   </article>
 }

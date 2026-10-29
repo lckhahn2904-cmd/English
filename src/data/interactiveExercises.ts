@@ -3,6 +3,8 @@ interface ExerciseBase {
   prompt: string
   explanation: string
   correctAnswers: string[]
+  translation?: string
+  level?: 'Cơ bản' | 'Trung bình' | 'Nâng cao'
 }
 
 export interface MultipleChoiceExercise extends ExerciseBase {
