@@ -26,9 +26,9 @@ const navSections = [
     items: [
       { to: '/dashboard', icon: Home, label: 'Home', end: true },
       { to: '/dashboard/courses', icon: GraduationCap, label: 'Khóa học của tôi' },
-      { to: '/dashboard/vocabulary', icon: Library, label: 'Thư viện từ vựng' },
       { to: '/dashboard/grammar', icon: Layers, label: 'Ngữ pháp' },
       { to: '/dashboard/speaking', icon: MessageSquare, label: 'Giao tiếp' },
+      { to: '/dashboard/vocabulary', icon: Library, label: 'Thư viện từ vựng' },
       { to: '/dashboard/exercises', icon: ClipboardList, label: 'Bài tập thêm' },
     ],
   },

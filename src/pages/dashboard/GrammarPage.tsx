@@ -1,9 +1,35 @@
-import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Fragment, useMemo } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowRight, BookOpen, Layers } from 'lucide-react'
 import GrammarTopicDetail from '../../components/dashboard/GrammarTopicDetail'
-import TwelveTensesGuide from '../../components/dashboard/TwelveTensesGuide'
-import { grammarSections, grammarTopics } from '../../data/grammarTopics'
+import { TwelveTensesSummary } from '../../components/dashboard/TwelveTensesGuide'
+import { grammarSections, grammarTopics, type GrammarTopic } from '../../data/grammarTopics'
+
+function GrammarTopicCard({ topic, selectedId, onSelect }: { topic: GrammarTopic; selectedId: string | null; onSelect: (id: string) => void }) {
+  const cardClass = `group flex min-h-36 flex-col rounded-2xl border bg-white p-4 shadow-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${selectedId === topic.id ? 'border-violet-300 ring-2 ring-violet-100' : 'border-gray-200 hover:border-blue-200 hover:shadow-md'}`
+
+  const content = <>
+    <div className="flex items-start justify-between gap-3"><h3 className="font-semibold text-gray-900">{topic.title}</h3><span className="shrink-0 rounded-md bg-gray-50 px-2 py-1 text-[11px] font-semibold text-gray-500">{topic.level}</span></div>
+    <p className="mt-2 text-sm leading-5 text-gray-600">{topic.summary}</p>
+    <span className="mt-auto inline-flex min-h-10 items-center gap-1 self-start pt-3 text-xs font-semibold text-blue-700 group-hover:text-blue-800">
+      <BookOpen className="h-4 w-4" /> Bắt đầu học <ArrowRight className="h-3.5 w-3.5" />
+    </span>
+  </>
+
+  if (topic.section === '12 thì tiếng Anh') {
+    return <Link to={`/dashboard/grammar/${encodeURIComponent(topic.id)}`} className={cardClass} aria-label={`Bắt đầu học: ${topic.title}`}>
+      {content}
+    </Link>
+  }
+
+  return <article className={`flex min-h-36 flex-col rounded-2xl border bg-white p-4 shadow-sm transition ${selectedId === topic.id ? 'border-violet-300 ring-2 ring-violet-100' : 'border-gray-200 hover:border-blue-200 hover:shadow-md'}`}>
+    <div className="flex items-start justify-between gap-3"><h3 className="font-semibold text-gray-900">{topic.title}</h3><span className="shrink-0 rounded-md bg-gray-50 px-2 py-1 text-[11px] font-semibold text-gray-500">{topic.level}</span></div>
+    <p className="mt-2 text-sm leading-5 text-gray-600">{topic.summary}</p>
+    <button onClick={() => onSelect(topic.id)} aria-expanded={selectedId === topic.id} className="mt-auto inline-flex min-h-10 items-center gap-1 self-start pt-3 text-xs font-semibold text-blue-700 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+      <BookOpen className="h-4 w-4" /> {selectedId === topic.id ? 'Đang xem bài học' : 'Bắt đầu học'} <ArrowRight className="h-3.5 w-3.5" />
+    </button>
+  </article>
+}
 
 export default function GrammarPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -27,24 +53,20 @@ export default function GrammarPage() {
       </header>
 
       {selectedId && !selectedTopic && <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">Không tìm thấy chủ đề ngữ pháp trong thư viện.</div>}
-      <TwelveTensesGuide selectedTenseId={selectedId} />
       {selectedTopic && selectedTopic.section !== '12 thì tiếng Anh' && <GrammarTopicDetail topic={selectedTopic} onClose={closeTopic} />}
 
       <div className="space-y-7">
         {grammarSections.map((section) => {
           const topics = grammarTopics.filter((topic) => topic.section === section)
-          return <section key={section} aria-labelledby={`grammar-${section}`}>
-            <h2 id={`grammar-${section}`} className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">{section}</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {topics.map((topic) => <article key={topic.id} className={`flex min-h-36 flex-col rounded-2xl border bg-white p-4 shadow-sm transition ${selectedId === topic.id ? 'border-violet-300 ring-2 ring-violet-100' : 'border-gray-200 hover:border-blue-200 hover:shadow-md'}`}>
-                <div className="flex items-start justify-between gap-3"><h3 className="font-semibold text-gray-900">{topic.title}</h3><span className="shrink-0 rounded-md bg-gray-50 px-2 py-1 text-[11px] font-semibold text-gray-500">{topic.level}</span></div>
-                <p className="mt-2 text-sm leading-5 text-gray-600">{topic.summary}</p>
-                <button onClick={() => setSearchParams({ topic: topic.id })} aria-expanded={selectedId === topic.id} className="mt-auto inline-flex min-h-10 items-center gap-1 self-start pt-3 text-xs font-semibold text-blue-700 hover:text-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                  <BookOpen className="h-4 w-4" /> {selectedId === topic.id ? 'Đang xem bài học' : 'Bắt đầu học'} <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-              </article>)}
-            </div>
-          </section>
+          return <Fragment key={section}>
+            <section aria-labelledby={`grammar-${section}`}>
+              <h2 id={`grammar-${section}`} className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-700">{section}</h2>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {topics.map((topic) => <GrammarTopicCard key={topic.id} topic={topic} selectedId={selectedId} onSelect={(id) => setSearchParams({ topic: id })} />)}
+              </div>
+            </section>
+            {section === '12 thì tiếng Anh' && <TwelveTensesSummary />}
+          </Fragment>
         })}
       </div>
     </div>

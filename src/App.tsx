@@ -18,6 +18,7 @@ import DashboardHome from './pages/dashboard/DashboardHome'
 import CoursesPage from './pages/dashboard/CoursesPage'
 import VocabularyPage from './pages/dashboard/VocabularyPage'
 import GrammarPage from './pages/dashboard/GrammarPage'
+import GrammarTensePage from './pages/dashboard/GrammarTensePage'
 import SpeakingPage from './pages/dashboard/SpeakingPage'
 import ExercisesPage from './pages/dashboard/ExercisesPage'
 import SettingsPage from './pages/dashboard/SettingsPage'
@@ -48,6 +49,7 @@ function App() {
               <Route path="courses" element={<CoursesPage />} />
               <Route path="vocabulary" element={<VocabularyPage />} />
               <Route path="grammar" element={<GrammarPage />} />
+              <Route path="grammar/:tenseId" element={<GrammarTensePage />} />
               <Route path="speaking" element={<SpeakingPage />} />
               <Route path="exercises" element={<ExercisesPage />} />
               <Route path="settings" element={<SettingsPage />} />
