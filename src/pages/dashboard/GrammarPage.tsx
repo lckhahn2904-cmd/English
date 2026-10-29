@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight, BookOpen, Layers } from 'lucide-react'
 import GrammarTopicDetail from '../../components/dashboard/GrammarTopicDetail'
+import TwelveTensesGuide from '../../components/dashboard/TwelveTensesGuide'
 import { grammarSections, grammarTopics } from '../../data/grammarTopics'
 
 export default function GrammarPage() {
@@ -26,7 +27,8 @@ export default function GrammarPage() {
       </header>
 
       {selectedId && !selectedTopic && <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">Không tìm thấy chủ đề ngữ pháp trong thư viện.</div>}
-      {selectedTopic && <GrammarTopicDetail topic={selectedTopic} onClose={closeTopic} />}
+      <TwelveTensesGuide selectedTenseId={selectedId} />
+      {selectedTopic && selectedTopic.section !== '12 thì tiếng Anh' && <GrammarTopicDetail topic={selectedTopic} onClose={closeTopic} />}
 
       <div className="space-y-7">
         {grammarSections.map((section) => {
