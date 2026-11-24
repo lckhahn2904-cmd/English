@@ -1,81 +1,34 @@
-import { ClipboardList, Target, Zap, Trophy } from 'lucide-react'
+import { ArrowRight, BookOpen, CheckCircle2, MousePointer2, UserRoundPlus } from 'lucide-react'
 
 const steps = [
-  {
-    step: '01',
-    icon: ClipboardList,
-    title: 'Kiểm tra trình độ',
-    description: 'Bài kiểm tra đầu vào 10 phút giúp EasyTalk hiểu chính xác trình độ hiện tại và xây dựng lộ trình phù hợp chỉ cho bạn.',
-  },
-  {
-    step: '02',
-    icon: Target,
-    title: 'Đặt mục tiêu',
-    description: 'Chọn mục tiêu học tập: giao tiếp hàng ngày, thuyết trình công việc, luyện thi IELTS/TOEIC hay du lịch nước ngoài.',
-  },
-  {
-    step: '03',
-    icon: Zap,
-    title: 'Học theo lộ trình AI',
-    description: 'AI tự động điều chỉnh nội dung, độ khó và tốc độ học dựa trên kết quả thực tế của bạn mỗi ngày.',
-  },
-  {
-    step: '04',
-    icon: Trophy,
-    title: 'Đạt mục tiêu',
-    description: 'Theo dõi tiến độ, hoàn thành thử thách và nhận chứng chỉ khi đạt được mục tiêu đã đề ra.',
-  },
+  { step: '01', icon: UserRoundPlus, title: 'Tạo tài khoản hoặc học thử', description: 'Đăng ký để đăng nhập, hoặc vào chế độ học thử để khám phá website.' },
+  { step: '02', icon: MousePointer2, title: 'Chọn nội dung muốn học', description: 'Bắt đầu với ngữ pháp, 12 thì tiếng Anh hoặc thư viện từ vựng.' },
+  { step: '03', icon: BookOpen, title: 'Học và thực hành', description: 'Đọc bài học, xem ví dụ và làm các bài tập có sẵn.' },
+  { step: '04', icon: CheckCircle2, title: 'Xem lại tiến độ', description: 'Theo dõi trạng thái bài học trong không gian học tập của bạn.' },
 ]
 
 export default function ProcessSection() {
   return (
-    <section id="process" className="py-20 sm:py-28 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section header */}
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">
-            Quy trình học tập
-          </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 tracking-tight mb-4">
-            Bắt đầu dễ dàng trong 4 bước
-          </h2>
-          <p className="text-gray-500 text-lg leading-relaxed">
-            Không cần kinh nghiệm trước. Chỉ cần bắt đầu — chúng tôi sẽ hướng dẫn từng bước.
-          </p>
+    <section id="process" className="bg-white py-16 sm:py-20">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-blue-700">Quy trình học tập</p>
+          <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">Bắt đầu dễ dàng trong 4 bước.</h2>
+          <p className="mt-4 text-base leading-7 text-slate-600 sm:text-lg">Chọn nội dung phù hợp và học theo nhịp độ của riêng bạn.</p>
         </div>
-
-        {/* Steps */}
         <div className="relative">
-          {/* Connector line (desktop) */}
-          <div className="hidden lg:block absolute top-12 left-0 right-0 h-px bg-gray-200 z-0" style={{ left: '12.5%', right: '12.5%' }} />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative z-10">
+          <div className="absolute left-6 top-7 bottom-7 w-px bg-blue-100 sm:hidden" />
+          <div className="hidden lg:block absolute left-[12.5%] right-[12.5%] top-8 h-px bg-blue-100" />
+          <div className="relative grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
             {steps.map(({ step, icon: Icon, title, description }) => (
-              <div key={step} className="flex flex-col items-center text-center">
-                {/* Step number + icon */}
-                <div className="relative mb-6">
-                  <div className="w-20 h-20 rounded-2xl bg-white border-2 border-blue-100 flex items-center justify-center shadow-sm">
-                    <Icon className="w-8 h-8 text-blue-600" strokeWidth={1.5} />
-                  </div>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center">
-                    {step.charAt(1)}
-                  </span>
-                </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-2">{title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
-              </div>
+              <article key={step} className="relative flex gap-4 sm:flex-col sm:items-center sm:text-center">
+                <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-blue-100 bg-white text-blue-700 shadow-sm sm:mb-5 sm:h-16 sm:w-16"><Icon className="h-6 w-6" strokeWidth={1.8} /><span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white">{step.slice(1)}</span></div>
+                <div><p className="text-xs font-bold tracking-wide text-blue-700">BƯỚC {step}</p><h3 className="mt-1 text-base font-bold text-slate-900">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-600">{description}</p></div>
+              </article>
             ))}
           </div>
         </div>
-
-        {/* Bottom note */}
-        <div className="mt-14 text-center">
-          <p className="text-sm text-gray-400">
-            Trung bình học viên EasyTalk đạt mục tiêu trong{' '}
-            <span className="font-semibold text-gray-700">60–90 ngày</span>{' '}
-            với 20 phút học mỗi ngày.
-          </p>
-        </div>
+        <div className="mt-10 flex justify-center"><a href="#learning-content" className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">Khám phá nội dung học <ArrowRight className="h-4 w-4" /></a></div>
       </div>
     </section>
   )

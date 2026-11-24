@@ -1,106 +1,42 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, MessageCircle, Share2, Video, Mail } from 'lucide-react'
-
-const footerLinks = {
-  'Sản phẩm': [
-    { label: 'Tính năng', href: '#benefits' },
-    { label: 'Lộ trình học', href: '#process' },
-    { label: 'Bảng giá', href: '/pricing' },
-    { label: 'Dùng thử miễn phí', href: '/register' },
-  ],
-  'Hỗ trợ': [
-    { label: 'Trung tâm trợ giúp', href: '/help' },
-    { label: 'Liên hệ', href: '/contact' },
-    { label: 'Cộng đồng', href: '/community' },
-  ],
-  'Công ty': [
-    { label: 'Về chúng tôi', href: '/about' },
-    { label: 'Blog', href: '/blog' },
-    { label: 'Tuyển dụng', href: '/careers' },
-  ],
-}
-
-const socialLinks = [
-  { icon: MessageCircle, href: '#', label: 'Facebook' },
-  { icon: Share2, href: '#', label: 'Twitter' },
-  { icon: Video, href: '#', label: 'YouTube' },
-  { icon: Mail, href: 'mailto:hello@easytalk.vn', label: 'Email' },
-]
+import { ArrowUpRight, BookOpen } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { useGuest } from '../context/GuestContext'
 
 export default function Footer() {
+  const { isAuthenticated } = useAuth()
+  const { enterGuestMode } = useGuest()
+  const learnerPath = (path: string) => isAuthenticated ? path : `${path}${path.includes('?') ? '&' : '?'}guest=true`
+  const enterLearnerMode = () => { if (!isAuthenticated) enterGuestMode() }
+
   return (
-    <footer className="bg-gray-900 text-gray-400">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Main footer content */}
-        <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* Brand column */}
-          <div className="lg:col-span-2">
-            <Link to="/" className="flex items-center gap-2.5 mb-4 group w-fit">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-500 transition-colors">
-                <BookOpen className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </div>
-              <span className="font-bold text-lg text-white tracking-tight">
-                Easy<span className="text-blue-400">Talk</span>
-              </span>
+    <footer className="bg-slate-950 text-slate-400">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-9 py-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-12">
+          <div>
+            <Link to="/" className="mb-4 inline-flex items-center gap-2.5 text-white">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600"><BookOpen className="h-5 w-5" /></span>
+              <span className="text-lg font-bold tracking-tight">EasyTalk English</span>
             </Link>
-            <p className="text-sm leading-relaxed mb-6 max-w-xs">
-              Nền tảng học tiếng Anh thông minh dành cho người Việt. Học hiệu quả, tiến bộ rõ ràng.
-            </p>
-            {/* Social links */}
-            <div className="flex items-center gap-2">
-              {socialLinks.map(({ icon: Icon, href, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors"
-                >
-                  <Icon className="w-3.5 h-3.5 text-gray-400 hover:text-white" />
-                </a>
-              ))}
-            </div>
+            <p className="max-w-sm text-sm leading-6">Nền tảng học tiếng Anh giúp bạn xây dựng kiến thức, luyện tập và tiến bộ mỗi ngày.</p>
           </div>
 
-          {/* Link columns */}
-          {Object.entries(footerLinks).map(([group, links]) => (
-            <div key={group}>
-              <h4 className="text-sm font-semibold text-white mb-4">{group}</h4>
-              <ul className="space-y-3">
-                {links.map(({ label, href }) => (
-                  <li key={label}>
-                    {href.startsWith('/') ? (
-                      <Link
-                        to={href}
-                        className="text-sm hover:text-white transition-colors"
-                      >
-                        {label}
-                      </Link>
-                    ) : (
-                      <a href={href} className="text-sm hover:text-white transition-colors">
-                        {label}
-                      </a>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+          <div><h3 className="mb-4 text-sm font-semibold text-white">Khám phá</h3><ul className="space-y-3 text-sm">
+            <li><a className="hover:text-white" href="#overview">Tổng quan</a></li><li><a className="hover:text-white" href="#learning-content">Nội dung học tập</a></li><li><a className="hover:text-white" href="#process">Quy trình học</a></li>
+          </ul></div>
 
-        {/* Bottom bar */}
-        <div className="py-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} EasyTalk. Bảo lưu mọi quyền.
-          </p>
-          <div className="flex items-center gap-4">
-            <Link to="/privacy" className="text-xs text-gray-500 hover:text-gray-400 transition-colors">
-              Chính sách bảo mật
-            </Link>
-            <Link to="/terms" className="text-xs text-gray-500 hover:text-gray-400 transition-colors">
-              Điều khoản sử dụng
-            </Link>
-          </div>
+          <div><h3 className="mb-4 text-sm font-semibold text-white">Nội dung học</h3><ul className="space-y-3 text-sm">
+            <li><Link onClick={enterLearnerMode} className="hover:text-white" to={learnerPath('/dashboard/grammar')}>Ngữ pháp</Link></li>
+            <li><Link onClick={enterLearnerMode} className="hover:text-white" to={learnerPath('/dashboard/grammar?folder=tenses')}>12 thì tiếng Anh</Link></li>
+            <li><Link onClick={enterLearnerMode} className="hover:text-white" to={learnerPath('/dashboard/vocabulary')}>Từ vựng</Link></li>
+          </ul></div>
+
+          <div><h3 className="mb-4 text-sm font-semibold text-white">Tài khoản</h3><ul className="space-y-3 text-sm">
+            <li><Link className="hover:text-white" to="/register">Tạo tài khoản</Link></li><li><Link className="hover:text-white" to="/login">Đăng nhập</Link></li>
+            <li><Link onClick={enterLearnerMode} className="inline-flex items-center gap-1 font-medium text-blue-300 hover:text-white" to={learnerPath('/dashboard')}>Học thử <ArrowUpRight className="h-3.5 w-3.5" /></Link></li>
+          </ul></div>
         </div>
+        <div className="border-t border-slate-800 py-5 text-xs text-slate-500">© {new Date().getFullYear()} EasyTalk English. Bảo lưu mọi quyền.</div>
       </div>
     </footer>
   )

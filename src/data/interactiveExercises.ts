@@ -27,7 +27,12 @@ export interface CorrectMistakeExercise extends ExerciseBase {
   hint: string
 }
 
-export type InteractiveExercise = MultipleChoiceExercise | FillBlankExercise | WordOrderExercise | CorrectMistakeExercise
+export interface SentenceConstructionExercise extends ExerciseBase {
+  type: 'sentence-construction'
+  hint: string
+}
+
+export type InteractiveExercise = MultipleChoiceExercise | FillBlankExercise | WordOrderExercise | CorrectMistakeExercise | SentenceConstructionExercise
 
 export const interactiveExercises: InteractiveExercise[] = [
   {
@@ -60,4 +65,5 @@ export const exerciseTypeLabels: Record<InteractiveExercise['type'], string> = {
   'fill-blank': 'Điền từ',
   'word-order': 'Sắp xếp câu',
   'correct-mistake': 'Sửa lỗi sai',
+  'sentence-construction': 'Vận dụng & Viết câu',
 }

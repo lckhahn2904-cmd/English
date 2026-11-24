@@ -11,12 +11,15 @@ export default function GrammarTensePage() {
   const { topicId } = useParams()
   const navigate = useNavigate()
   const topic = grammarTopics.find((item) => item.id === topicId)
-  const folder = topic && grammarFolders.find((item) => item.items.some((folderItem) => folderItem.topicId === topic.id))
+  const folder = topic && (
+    grammarFolders.find((item) => item.items.some((folderItem) => folderItem.topicId === topic.id))
+    ?? (supplementalTopicIds.includes(topic.id) ? grammarFolders.find((item) => item.id === 'tenses') : undefined)
+  )
 
   if (!topic || !folder) {
     return <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
       <p>Không tìm thấy bài học ngữ pháp này.</p>
-      <Link to="/dashboard/grammar" className="mt-3 inline-flex min-h-9 items-center rounded-lg px-2 font-semibold text-blue-700 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Quay lại danh sách 12 thì</Link>
+      <Link to="/dashboard/grammar" className="mt-3 inline-flex min-h-9 items-center rounded-lg px-2 font-semibold text-blue-700 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">Quay lại danh sách ngữ pháp</Link>
     </div>
   }
 

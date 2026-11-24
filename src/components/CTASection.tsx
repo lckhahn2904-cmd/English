@@ -1,70 +1,28 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, CheckCircle } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { useGuest } from '../context/GuestContext'
 import { useAuth } from '../context/AuthContext'
-
-const perks = [
-  'Truy cập 50+ bài học miễn phí',
-  'Không cần thẻ tín dụng',
-  'Hủy bất cứ lúc nào',
-]
 
 export default function CTASection() {
   const { enterGuestMode } = useGuest()
   const { isAuthenticated } = useAuth()
 
   return (
-    <section className="py-20 sm:py-28 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto text-center bg-blue-600 rounded-3xl px-8 py-14 sm:px-14 sm:py-16 shadow-xl shadow-blue-200/50">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
-            Sẵn sàng nói tiếng Anh <br className="hidden sm:block" />tự tin hơn?
-          </h2>
-          <p className="text-blue-100 text-lg leading-relaxed mb-8 max-w-xl mx-auto">
-            Tham gia cùng hơn 50,000 học viên đang học tiếng Anh hiệu quả với EasyTalk. Bắt đầu miễn phí ngay hôm nay.
-          </p>
-
-          {/* Perks */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            {perks.map((perk) => (
-              <div key={perk} className="flex items-center gap-1.5 text-sm text-blue-100">
-                <CheckCircle className="w-4 h-4 text-blue-200 shrink-0" />
-                {perk}
-              </div>
-            ))}
-          </div>
-
-          {/* CTA buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+    <section className="bg-white px-4 pb-16 sm:px-6 sm:pb-20 lg:px-8">
+      <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-blue-700 px-6 py-12 text-center sm:px-12 sm:py-16">
+        <div className="pointer-events-none absolute -right-14 -top-24 h-64 w-64 rounded-full border-[36px] border-white/10" />
+        <div className="pointer-events-none absolute -bottom-32 -left-12 h-64 w-64 rounded-full border-[36px] border-white/10" />
+        <div className="relative mx-auto max-w-2xl">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-blue-100">EasyTalk English</p>
+          <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-4xl">Bắt đầu hành trình tiếng Anh của bạn.</h2>
+          <p className="mx-auto mt-4 max-w-xl text-base leading-7 text-blue-100 sm:text-lg">Mỗi ngày một bước nhỏ, mỗi bài học thêm tự tin. Hãy bắt đầu cùng EasyTalk English ngay hôm nay.</p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             {isAuthenticated ? (
-              <Link
-                to="/dashboard"
-                id="cta-section-dashboard"
-                className="group flex items-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold text-blue-700 bg-white hover:bg-blue-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 justify-center"
-              >
-                Vào Không gian học tập
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-              </Link>
+              <Link to="/dashboard" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-blue-800 transition hover:bg-blue-50">Vào không gian học tập <ArrowRight className="h-4 w-4" /></Link>
             ) : (
-              <>
-                <Link
-                  to="/dashboard?guest=true"
-                  id="cta-section-register"
-                  onClick={enterGuestMode}
-                  className="group flex items-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base font-semibold text-blue-700 bg-white hover:bg-blue-50 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 justify-center"
-                >
-                  Bắt đầu miễn phí
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-                <Link
-                  to="/login"
-                  id="cta-section-login"
-                  className="w-full sm:w-auto px-8 py-3.5 text-base font-medium text-blue-100 hover:text-white border border-blue-400/50 hover:border-blue-300 rounded-xl transition-all duration-200 justify-center flex items-center"
-                >
-                  Đăng nhập
-                </Link>
-              </>
+              <Link to="/dashboard?guest=true" onClick={enterGuestMode} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-6 font-semibold text-blue-800 transition hover:bg-blue-50">Bắt đầu học miễn phí <ArrowRight className="h-4 w-4" /></Link>
             )}
+            <Link to="/login" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-blue-300/70 px-6 font-semibold text-white transition hover:bg-blue-600">Đăng nhập</Link>
           </div>
         </div>
       </div>

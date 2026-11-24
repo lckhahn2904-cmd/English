@@ -44,8 +44,11 @@ export default function Header() {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
+            <a href="#learning-content" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all">
+              Nội dung học
+            </a>
             <a href="#benefits" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all">
-              Tính năng
+              Phương pháp
             </a>
             <a href="#process" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all">
               Lộ trình
@@ -99,8 +102,11 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 shadow-lg">
           <nav className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
+            <a href="#learning-content" className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg">
+              Nội dung học
+            </a>
             <a href="#benefits" className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg">
-              Tính năng
+              Phương pháp
             </a>
             <a href="#process" className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-lg">
               Lộ trình
