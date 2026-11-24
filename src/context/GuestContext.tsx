@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo } from 'react'
+import { createContext, useContext, useState, useMemo, useCallback } from 'react'
 import type { ReactNode } from 'react'
 
 export interface QuizScore {
@@ -14,6 +14,7 @@ export interface GuestState {
   learnedVocabIds: string[]
   quizScores: Record<string, QuizScore>
   sessionXp: number
+  activeSpeakingLessonId: string | null
 }
 
 export interface GuestContextType extends GuestState {
@@ -21,6 +22,7 @@ export interface GuestContextType extends GuestState {
   markLessonCompleted: (lessonId: string) => void
   toggleVocabLearned: (vocabId: string) => void
   saveQuizResult: (lessonId: string, score: number, total: number, answers: Record<number, number>) => void
+  setActiveSpeakingLesson: (lessonId: string | null) => void
   resetGuestProgress: () => void
   enterGuestMode: () => void
   exitGuestMode: () => void
@@ -32,6 +34,7 @@ const initialGuestState: GuestState = {
   learnedVocabIds: [],
   quizScores: {},
   sessionXp: 0,
+  activeSpeakingLessonId: null,
 }
 
 const GuestContext = createContext<GuestContextType | undefined>(undefined)
@@ -74,6 +77,10 @@ export function GuestProvider({ children }: { children: ReactNode }) {
       return { ...prev, completedLessonIds: [...prev.completedLessonIds, lessonId] }
     })
   }
+
+  const setActiveSpeakingLesson = useCallback((lessonId: string | null) => {
+    setState((prev) => prev.activeSpeakingLessonId === lessonId ? prev : { ...prev, activeSpeakingLessonId: lessonId })
+  }, [])
 
   const toggleVocabLearned = (vocabId: string) => {
     setState((prev) => {
@@ -128,6 +135,7 @@ export function GuestProvider({ children }: { children: ReactNode }) {
       markLessonCompleted,
       toggleVocabLearned,
       saveQuizResult,
+      setActiveSpeakingLesson,
       resetGuestProgress,
       enterGuestMode,
       exitGuestMode,

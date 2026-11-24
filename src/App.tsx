@@ -20,6 +20,8 @@ import VocabularyPage from './pages/dashboard/VocabularyPage'
 import GrammarPage from './pages/dashboard/GrammarPage'
 import GrammarTensePage from './pages/dashboard/GrammarTensePage'
 import SpeakingPage from './pages/dashboard/SpeakingPage'
+import SpeakingModulePage from './pages/dashboard/SpeakingModulePage'
+import SpeakingLessonPage from './pages/dashboard/SpeakingLessonPage'
 import ExercisesPage from './pages/dashboard/ExercisesPage'
 import SettingsPage from './pages/dashboard/SettingsPage'
 import VocabularyFlashcardPage from './pages/dashboard/VocabularyFlashcardPage'
@@ -51,6 +53,8 @@ function App() {
               <Route path="grammar" element={<GrammarPage />} />
               <Route path="grammar/:topicId" element={<GrammarTensePage />} />
               <Route path="speaking" element={<SpeakingPage />} />
+              <Route path="speaking/module/:moduleId" element={<SpeakingModulePage />} />
+              <Route path="speaking/lesson/:lessonId" element={<SpeakingLessonPage />} />
               <Route path="exercises" element={<ExercisesPage />} />
               <Route path="settings" element={<SettingsPage />} />
             </Route>
