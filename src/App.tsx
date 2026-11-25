@@ -20,11 +20,21 @@ import VocabularyPage from './pages/dashboard/VocabularyPage'
 import GrammarPage from './pages/dashboard/GrammarPage'
 import GrammarTensePage from './pages/dashboard/GrammarTensePage'
 import SpeakingPage from './pages/dashboard/SpeakingPage'
+import ListeningPage from './pages/dashboard/ListeningPage'
+import PronunciationPage from './pages/dashboard/PronunciationPage'
+import CommunicationAssessmentPage from './pages/dashboard/CommunicationAssessmentPage'
 import SpeakingModulePage from './pages/dashboard/SpeakingModulePage'
 import SpeakingLessonPage from './pages/dashboard/SpeakingLessonPage'
+import ConversationPage from './pages/dashboard/ConversationPage'
 import ExercisesPage from './pages/dashboard/ExercisesPage'
 import SettingsPage from './pages/dashboard/SettingsPage'
 import VocabularyFlashcardPage from './pages/dashboard/VocabularyFlashcardPage'
+import NotificationsPage from './pages/dashboard/NotificationsPage'
+import AdminGuard from './components/admin/AdminGuard'
+import AdminLayout from './layouts/AdminLayout'
+import AdminOverviewPage from './pages/admin/AdminOverviewPage'
+import AdminContentPage from './pages/admin/AdminContentPage'
+import AdminCommunicationStudioPage from './pages/admin/AdminCommunicationStudioPage'
 
 function App() {
   return (
@@ -53,10 +63,16 @@ function App() {
               <Route path="grammar" element={<GrammarPage />} />
               <Route path="grammar/:topicId" element={<GrammarTensePage />} />
               <Route path="speaking" element={<SpeakingPage />} />
+              <Route path="speaking/listening" element={<ListeningPage />} />
+              <Route path="speaking/listening/:episodeId" element={<ListeningPage />} />
+              <Route path="speaking/pronunciation" element={<PronunciationPage />} />
+              <Route path="communication-assessment" element={<CommunicationAssessmentPage />} />
+              <Route path="conversation" element={<ConversationPage />} />
               <Route path="speaking/module/:moduleId" element={<SpeakingModulePage />} />
               <Route path="speaking/lesson/:lessonId" element={<SpeakingLessonPage />} />
               <Route path="exercises" element={<ExercisesPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
             </Route>
 
             {/* Isolated vocabulary study screen: deliberately outside DashboardLayout. */}
@@ -70,6 +86,12 @@ function App() {
             />
 
             {/* ── 404 fallback ── */}
+            <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
+              <Route index element={<AdminOverviewPage />} />
+              <Route path="content" element={<AdminContentPage />} />
+              <Route path="content/communication" element={<AdminCommunicationStudioPage />} />
+            </Route>
+
             <Route
               path="*"
               element={

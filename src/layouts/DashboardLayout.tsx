@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom'
 import { Menu } from 'lucide-react'
 import Sidebar from '../components/dashboard/Sidebar'
 import GuestBanner from '../components/dashboard/GuestBanner'
+import NotificationBell from '../components/dashboard/NotificationBell'
 
 export default function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -15,11 +16,11 @@ export default function DashboardLayout() {
       {/* Main content — offset by sidebar width on desktop */}
       <div className="lg:pl-64 min-h-screen flex flex-col">
         {/* Mobile top bar */}
-        <header className="lg:hidden sticky top-0 z-20 bg-white border-b border-gray-100 px-4 h-14 flex items-center gap-3 shadow-sm">
+        <header className="sticky top-0 z-20 bg-white border-b border-gray-100 px-4 sm:px-6 h-14 flex items-center gap-3 shadow-sm">
           <button
             id="mobile-sidebar-toggle"
             onClick={() => setSidebarOpen(true)}
-            className="p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             aria-label="Mở menu"
           >
             <Menu className="w-5 h-5" />
@@ -27,6 +28,7 @@ export default function DashboardLayout() {
           <span className="font-bold text-base text-gray-900">
             Easy<span className="text-blue-600">Talk</span>
           </span>
+          <NotificationBell />
         </header>
 
         {/* Page content */}

@@ -1,29 +1,52 @@
+﻿import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, AudioLines, BookOpen, CheckCircle2, Clock3, GraduationCap, LockKeyhole, MessageCircle, Mic2, Sparkles, Target } from 'lucide-react'
+import { ArrowRight, AudioLines, BookOpen, CheckCircle2, Clock3, GraduationCap, Headphones, LockKeyhole, MessageCircle, Mic2, Sparkles, Target } from 'lucide-react'
 import { useGuest } from '../../context/GuestContext'
-import { A0_KNOWLEDGE_UNITS, a0Modules, allA0Lessons, speakingAiModes, speakingLevels, speakingSupportLevels } from '../../data/speakingCurriculum'
+import { useVocabulary } from '../../context/VocabularyContext'
+import { A0_KNOWLEDGE_UNITS, a0Modules, allA0Lessons, speakingAiModes, speakingSupportLevels } from '../../data/speakingCurriculum'
+import { buildLearningIntelligence } from '../../services/learningIntelligenceService'
+import { buildCommunicationLearningPath, getLearningGoalLabel } from '../../services/communicationLearningPathService'
 
 const practiceOptions = [
-  { id: 'pronunciation', title: 'Pronunciation Practice', description: 'Luyện chữ cái, nguyên âm, phụ âm và trọng âm với hướng dẫn theo bài A0.', icon: AudioLines, to: '/dashboard/speaking/lesson/a003', active: true, tag: 'Có bài học' },
+  { id: 'pronunciation', title: 'Pronunciation & Intonation', description: 'Học IPA, âm dễ nhầm, trọng âm và tự ghi âm theo giáo trình A0.', icon: AudioLines, to: '/dashboard/speaking/pronunciation', active: true, tag: 'A0 · luyện thủ công' },
   { id: 'guided', title: 'Guided Speaking', description: 'Thực hành theo mục tiêu và mẫu câu trong các bài hội thoại A0.', icon: Mic2, to: '/dashboard/speaking/lesson/a025', active: true, tag: 'Có bài học' },
-  { id: 'ai-conversation', title: 'AI Conversation', description: 'Hội thoại tự do với AI chưa được kết nối trong phiên bản này.', icon: Sparkles, active: false, tag: 'Coming Soon' },
-  { id: 'assessment', title: 'Speaking Assessment', description: 'Đánh giá trình độ nói tự động chưa được triển khai.', icon: Target, active: false, tag: 'Coming Soon' },
+  { id: 'listening', title: 'Listening & Comprehension', description: 'Luyện đọc hiểu transcript giao tiếp và xem trạng thái audio của từng bài.', icon: Headphones, to: '/dashboard/speaking/listening', active: true, tag: 'Transcript practice' },
+  { id: 'ai-conversation', title: 'AI Conversation', description: 'Chọn chủ đề, role-play, tình huống hàng ngày hoặc Free Talk theo nội dung A0.', icon: Sparkles, to: '/dashboard/conversation', active: true, tag: 'A0 · Bản nền' },
+  { id: 'assessment', title: 'Communication Assessment', description: 'Chọn quiz transcript, nhiệm vụ nói tự kiểm tra, nhận diện IPA hoặc tình huống giao tiếp.', icon: Target, to: '/dashboard/communication-assessment', active: true, tag: 'Không chấm giọng tự động' },
 ]
 
 export default function SpeakingPage() {
-  const { completedLessonIds, activeSpeakingLessonId } = useGuest()
+  const { completedLessonIds, activeSpeakingLessonId, learningEvidence, learnedVocabIds, communicationPathPreferences, updateCommunicationPathPreferences } = useGuest()
+  const { allWords } = useVocabulary()
   const a0CompletedIds = new Set(completedLessonIds.filter((id) => id.startsWith('speaking-a')))
-  const completedLessons = allA0Lessons.filter((lesson) => a0CompletedIds.has(`speaking-${lesson.id}`))
+  const completedLessons = completedLessonIds.flatMap((completedId) => {
+    const lesson = allA0Lessons.find((candidate) => completedId === `speaking-${candidate.id}`)
+    return lesson ? [lesson] : []
+  })
   const activeLesson = allA0Lessons.find((lesson) => lesson.id === activeSpeakingLessonId && !a0CompletedIds.has(`speaking-${lesson.id}`))
+  const path = useMemo(() => buildCommunicationLearningPath(completedLessonIds, activeSpeakingLessonId), [completedLessonIds, activeSpeakingLessonId])
+  const learningInput = useMemo(() => ({
+    completedLessonIds,
+    activeSpeakingLessonId,
+    learningEvidence,
+    learnedVocabulary: allWords.filter((word) => learnedVocabIds.includes(word.id)).map((word) => word.word),
+    lessons: allA0Lessons,
+  }), [activeSpeakingLessonId, allWords, completedLessonIds, learnedVocabIds, learningEvidence])
+  const learningIntelligence = useMemo(() => buildLearningIntelligence(learningInput), [learningInput])
   const lastCompleted = [...completedLessons].reverse()[0]
-  const continueLesson = activeLesson ?? (() => {
-    const recentIndex = lastCompleted ? allA0Lessons.findIndex((lesson) => lesson.id === lastCompleted.id) : -1
-    return allA0Lessons.slice(recentIndex + 1).find((lesson) => !a0CompletedIds.has(`speaking-${lesson.id}`))
-      ?? allA0Lessons.find((lesson) => !a0CompletedIds.has(`speaking-${lesson.id}`))
-  })()
+  const continueLesson = path.nextLesson
   const currentLesson = activeLesson ?? lastCompleted
   const isA0Complete = completedLessons.length === allA0Lessons.length
-  const progressPercent = Math.round((completedLessons.length / allA0Lessons.length) * 100)
+  const progressPercent = path.overallPercentage
+  const currentStage = path.stages.find((stage) => stage.id === path.currentStageId)
+  const reviewRecommendations = learningIntelligence.recommendations.filter((recommendation) => recommendation.kind === 'review-knowledge')
+  const preferredCategory = communicationPathPreferences.goal === 'daily-life' ? 'Daily Life'
+    : communicationPathPreferences.goal === 'travel' ? 'Travel'
+      : communicationPathPreferences.goal === 'workplace' ? 'Workplace'
+        : communicationPathPreferences.goal === 'confidence' ? 'Job Interview' : null
+  const focusedScenarios = path.stages.flatMap((stage) => stage.focusGoals.includes(communicationPathPreferences.goal) ? stage.scenarios : [])
+    .sort((left, right) => Number(right.category === preferredCategory) - Number(left.category === preferredCategory))
+    .slice(0, communicationPathPreferences.pace === 'light' ? 2 : 4)
 
   return (
     <div className="space-y-7">
@@ -37,19 +60,11 @@ export default function SpeakingPage() {
       </header>
 
       <section aria-labelledby="speaking-path-heading">
-        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Learning Path</p><h2 id="speaking-path-heading" className="mt-1 text-lg font-bold text-slate-950 sm:text-xl">Lộ trình A0 đến B2</h2></div><span className="text-xs text-slate-500">Chỉ A0 có giáo trình trong phiên bản này</span></div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
-          {speakingLevels.map((level) => {
-            const available = level.status === 'available'
-            return available ? (
-              <Link key={level.id} to="/dashboard/speaking/module/a0-01" className="group min-h-32 rounded-2xl border border-blue-200 bg-white p-4 shadow-sm transition hover:border-blue-400 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                <span className="flex items-center justify-between"><span className="text-lg font-extrabold text-blue-700">{level.label}</span><CheckCircle2 className="h-4 w-4 text-blue-600" /></span><span className="mt-1 block text-xs font-semibold text-slate-800">{level.title}</span><span className="mt-2 block text-[11px] leading-4 text-slate-500">Đang triển khai · {completedLessons.length}/{allA0Lessons.length} bài</span>
-              </Link>
-            ) : (
-              <article key={level.id} className="min-h-32 rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="flex items-center justify-between"><span className="text-lg font-extrabold text-slate-400">{level.label}</span><LockKeyhole className="h-4 w-4 text-slate-400" /></span><span className="mt-1 block text-xs font-semibold text-slate-600">{level.title}</span><span className="mt-2 block text-[11px] leading-4 text-slate-500">Chưa triển khai</span></article>
-            )
-          })}
-        </div>
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-700">Learning Path</p><h2 id="speaking-path-heading" className="mt-1 text-lg font-bold text-slate-950 sm:text-xl">5 chặng học giao tiếp</h2></div><span className="text-xs text-slate-500">A0 có tiến độ theo 32 bài; chặng mở rộng không bị khóa</span></div>
+        <div className="mb-4 grid gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/60 p-4 sm:grid-cols-2"><label className="text-xs font-bold text-slate-700">Mục tiêu giao tiếp ưu tiên<select value={communicationPathPreferences.goal} onChange={(event) => updateCommunicationPathPreferences({ goal: event.target.value as typeof communicationPathPreferences.goal })} className="mt-1.5 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal"><option value="general">Giao tiếp tổng quát</option><option value="daily-life">Đời sống hằng ngày</option><option value="travel">Du lịch</option><option value="workplace">Công việc</option><option value="confidence">Tự tin trò chuyện</option></select></label><label className="text-xs font-bold text-slate-700">Nhịp gợi ý<select value={communicationPathPreferences.pace} onChange={(event) => updateCommunicationPathPreferences({ pace: event.target.value as typeof communicationPathPreferences.pace })} className="mt-1.5 min-h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-normal"><option value="light">Nhẹ nhàng · 2 tình huống gợi ý</option><option value="steady">Đều đặn · 4 tình huống gợi ý</option></select></label><p className="text-[11px] leading-5 text-slate-600 sm:col-span-2">Tùy chỉnh chỉ sắp xếp số tình huống gợi ý; không thay đổi bài đã hoàn thành. Thiết lập giữ trong phiên này. Bạn có thể mở bất kỳ bài hoặc chặng nào.</p></div>
+        <div className="mb-4 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:grid-cols-[1fr_auto] sm:items-center"><div><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{currentStage ? 'Chặng hiện tại' : 'Phần nền tảng A0 đã hoàn thành'}</p><p className="mt-1 text-sm font-bold text-slate-900">{currentStage?.title ?? 'Bạn có thể khám phá các tình huống mở rộng'}</p><p className="mt-1 text-xs leading-5 text-slate-600">{currentStage?.goal ?? 'Chặng Workplace và Confident là thư viện luyện tập xem trước; chưa có dữ liệu hoàn thành cho các role-play này.'}</p></div><span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-800">{path.completedLessonCount}/{path.totalTrackedLessons} bài · {path.overallPercentage}%</span></div>
+        <div className="space-y-3">{path.stages.map((stage, index) => <article key={stage.id} className={`rounded-2xl border bg-white p-4 shadow-sm ${stage.status === 'in-progress' ? 'border-blue-300 ring-1 ring-blue-100' : 'border-slate-200'}`}><div className="flex items-start gap-3"><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-extrabold ${stage.status === 'complete' ? 'bg-emerald-100 text-emerald-800' : stage.status === 'in-progress' ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600'}`}>{stage.status === 'complete' ? <CheckCircle2 className="h-4 w-4" /> : index + 1}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center justify-between gap-2"><h3 className="text-sm font-bold text-slate-950">Stage {index + 1} · {stage.title}</h3><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${stage.status === 'complete' ? 'bg-emerald-50 text-emerald-800' : stage.status === 'in-progress' ? 'bg-blue-50 text-blue-800' : stage.status === 'practice-preview' ? 'bg-amber-50 text-amber-900' : 'bg-slate-100 text-slate-600'}`}>{stage.status === 'complete' ? 'Hoàn thành theo bài học' : stage.status === 'in-progress' ? 'Đang học' : stage.status === 'practice-preview' ? 'Thư viện xem trước · chưa theo dõi' : 'Có thể tiếp tục · tự chọn'}</span></div><p className="mt-1 text-xs leading-5 text-slate-600">{stage.goal}</p>{stage.progressPercentage !== null ? <><div className="mt-3 flex items-center justify-between text-[10px] text-slate-500"><span>{stage.completedLessonCount}/{stage.trackedLessonCount} bài học hoàn thành</span><span>{stage.progressPercentage}%</span></div><div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-label={`Tiến độ ${stage.title}`} aria-valuemin={0} aria-valuemax={stage.trackedLessonCount} aria-valuenow={stage.completedLessonCount}><div className="h-full rounded-full bg-blue-600" style={{ width: `${stage.progressPercentage}%` }} /></div></> : <p className="mt-2 text-[11px] leading-5 text-amber-900">Có tình huống luyện tập, nhưng hội thoại AI chưa kết nối nên chưa thể xác nhận hoàn thành.</p>}
+          <details className="mt-3"><summary className="min-h-9 cursor-pointer text-xs font-bold text-blue-700">Xem bài học và tình huống trong chặng</summary>{stage.lessons.length > 0 && <ul className="mt-2 divide-y divide-slate-100 rounded-xl border border-slate-100">{stage.lessons.map((lesson) => {const done = a0CompletedIds.has(`speaking-${lesson.id}`);const active = activeLesson?.id === lesson.id;const supported = [lesson.vocabulary.length > 0 && 'Từ vựng', lesson.listening.script.trim() && 'Transcript', lesson.pronunciation.focus && 'Phát âm', lesson.speaking_tasks.length > 0 && 'Speaking'].filter(Boolean);return <li key={lesson.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-semibold text-slate-900">{lesson.code} · {lesson.title}{active && <span className="ml-2 rounded bg-blue-50 px-1.5 py-0.5 text-[9px] text-blue-700">Đang học</span>}</p><p className="mt-1 text-[10px] text-slate-500">{supported.join(' · ')}</p></div><div className="flex items-center gap-3"><span className={`text-[10px] font-semibold ${done ? 'text-emerald-700' : 'text-slate-500'}`}>{done ? 'Hoàn thành' : 'Chưa hoàn thành'}</span><Link to={`/dashboard/speaking/lesson/${lesson.id}`} className="text-xs font-bold text-blue-700 hover:underline">{done ? 'Ôn lại' : active ? 'Tiếp tục' : 'Mở bài'}</Link><Link to={`/dashboard/speaking/listening/a0-${lesson.id}`} className="text-[10px] font-semibold text-slate-600 hover:underline">Transcript</Link></div></li>})}</ul>}{stage.scenarios.length > 0 && <div className="mt-3"><p className="text-[10px] font-bold uppercase tracking-wide text-slate-500">Tình huống liên quan</p><div className="mt-2 flex flex-wrap gap-2">{stage.scenarios.map((scenario) => <Link key={scenario.id} to={`/dashboard/conversation?scenario=${scenario.id}`} className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[10px] font-semibold text-indigo-800 hover:bg-indigo-100">{scenario.title}</Link>)}</div></div>}<div className="mt-3 flex flex-wrap gap-2"><Link to="/dashboard/speaking/pronunciation" className="text-[10px] font-semibold text-slate-600 hover:underline">Pronunciation</Link><Link to="/dashboard/speaking/listening" className="text-[10px] font-semibold text-slate-600 hover:underline">Listening & transcript</Link><Link to="/dashboard/communication-assessment" className="text-[10px] font-semibold text-slate-600 hover:underline">Assessment</Link></div></details></div></div></article>)}</div>
       </section>
 
       <section aria-labelledby="speaking-practice-heading">
@@ -83,6 +98,11 @@ export default function SpeakingPage() {
           <p className="mt-3 text-[11px] leading-5 text-slate-500">Tiến độ không được lưu vào Supabase và sẽ mất khi tải lại trang. Chưa có dữ liệu đánh giá CEFR.</p>
           {isA0Complete && <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700"><CheckCircle2 className="h-4 w-4" /> Hoàn thành A0 trong phiên này</div>}
         </article>
+      </section>
+
+      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2" aria-label="Ôn tập và chủ đề ưu tiên">
+        <article className="rounded-2xl border border-amber-100 bg-amber-50/50 p-5 shadow-sm"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-amber-700" /><h2 className="text-sm font-bold text-slate-900">Review Recommended · Smart Review</h2></div>{reviewRecommendations.length > 0 ? <><p className="mt-2 text-xs leading-5 text-slate-600">Đề xuất từ kết quả cần hỗ trợ được ghi nhận ở nhiều hoạt động.</p><ul className="mt-3 space-y-2">{reviewRecommendations.map((item) => <li key={item.id} className="rounded-xl bg-white p-3"><p className="text-xs font-bold text-slate-900">{item.activity}</p><p className="mt-1 text-[11px] leading-5 text-slate-600">{item.reason}</p>{item.lessonId && <Link to={`/dashboard/speaking/lesson/${item.lessonId}`} className="mt-2 inline-flex min-h-8 items-center gap-1 text-xs font-semibold text-blue-700 hover:underline">Ôn bài gốc <ArrowRight className="h-3 w-3" /></Link>}</li>)}</ul></> : <p className="mt-2 text-xs leading-5 text-slate-600">Chưa có đủ kết quả lặp lại để xác định điểm cần ôn. Bạn vẫn có thể tự chọn một bài bất kỳ.</p>}</article>
+        <article className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-5 shadow-sm"><div className="flex items-center gap-2"><MessageCircle className="h-4 w-4 text-indigo-700" /><h2 className="text-sm font-bold text-slate-900">Gợi ý theo mục tiêu · {getLearningGoalLabel(communicationPathPreferences.goal)}</h2></div><p className="mt-2 text-xs leading-5 text-slate-600">{focusedScenarios.length ? `${focusedScenarios.length} tình huống được ưu tiên theo thiết lập của bạn. Đây là nội dung luyện mở, chưa ghi nhận hoàn thành.` : 'Chưa có tình huống khớp mục tiêu này.'}</p><ul className="mt-3 space-y-2">{focusedScenarios.map((scenario) => <li key={scenario.id} className="flex items-center justify-between gap-2 rounded-xl bg-white p-3"><span><span className="block text-xs font-bold text-slate-900">{scenario.title}</span><span className="text-[10px] text-slate-500">{scenario.category} · {scenario.level} đề xuất</span></span><Link to={`/dashboard/conversation?scenario=${scenario.id}`} className="text-xs font-bold text-indigo-700 hover:underline">Mở</Link></li>)}</ul></article>
       </section>
 
       <section aria-labelledby="a0-modules-heading">

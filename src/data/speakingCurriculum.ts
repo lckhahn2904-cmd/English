@@ -128,6 +128,12 @@ const vocabMeta: Record<string, VocabMeta> = {
   bed: ['/bɛd/', 'danh từ', 'The bed is small.', 'Chiếc giường nhỏ.'], bad: ['/bæd/', 'tính từ', 'This is a bad example.', 'Đây là một ví dụ không tốt.'], den: ['/dɛn/', 'danh từ', 'The den is small.', 'Căn phòng nhỏ.'], sip: ['/sɪp/', 'động từ', 'Sip the water.', 'Nhấp một ngụm nước.'], zip: ['/zɪp/', 'danh từ/động từ', 'Zip the bag.', 'Kéo khóa túi.'], bag: ['/bæɡ/', 'danh từ', 'The bag is blue.', 'Chiếc túi màu xanh dương.'], cats: ['/kæts/', 'danh từ số nhiều', 'The cats are here.', 'Những con mèo ở đây.'], books: ['/bʊks/', 'danh từ số nhiều', 'Two books are here.', 'Hai quyển sách ở đây.'], yellow: ['/ˈjɛl.oʊ/', 'tính từ', 'The pen is yellow.', 'Cây bút màu vàng.'], black: ['/blæk/', 'tính từ', 'The bag is black.', 'Chiếc túi màu đen.'], white: ['/waɪt/', 'tính từ', 'The book is white.', 'Quyển sách màu trắng.'], classroom: ['/ˈklæs.ruːm/', 'danh từ', 'I am in the classroom.', 'Tôi ở trong lớp học.'], its: ['/ɪts/', 'tính từ sở hữu', 'The cat is small. Its name is Mimi.', 'Con mèo nhỏ. Tên của nó là Mimi.'], our: ['/aʊr/', 'tính từ sở hữu', 'Our classroom is here.', 'Lớp học của chúng tôi ở đây.'], their: ['/ðɛr/', 'tính từ sở hữu', 'Their books are here.', 'Sách của họ ở đây.'], 'good afternoon': ['/ˌɡʊd ˌæf.tɚˈnuːn/', 'cụm chào hỏi', 'Good afternoon, Ben.', 'Chào buổi chiều, Ben.'], 'good night': ['/ˌɡʊd ˈnaɪt/', 'cụm chào tạm biệt', 'Good night. See you tomorrow.', 'Chúc ngủ ngon. Hẹn gặp ngày mai.'], how: ['/haʊ/', 'từ để hỏi', 'How are you?', 'Bạn khỏe không.'],
 }
 
+/** Returns curated IPA already stored in the A0 vocabulary metadata. */
+export const getA0PronunciationReference = (word: string): { word: string; ipa: string } | undefined => {
+  const entry = vocabMeta[word]
+  return entry ? { word, ipa: entry[0] } : undefined
+}
+
 const alphabetLetters: A0AlphabetLetter[] = [
   ['A', 'ay', '/eɪ/'], ['B', 'bee', '/biː/'], ['C', 'cee', '/siː/'], ['D', 'dee', '/diː/'], ['E', 'ee', '/iː/'], ['F', 'ef', '/ɛf/'], ['G', 'gee', '/dʒiː/'], ['H', 'aitch', '/eɪtʃ/'], ['I', 'eye', '/aɪ/'], ['J', 'jay', '/dʒeɪ/'], ['K', 'kay', '/keɪ/'], ['L', 'el', '/ɛl/'], ['M', 'em', '/ɛm/'],
   ['N', 'en', '/ɛn/'], ['O', 'oh', '/oʊ/'], ['P', 'pee', '/piː/'], ['Q', 'cue', '/kjuː/'], ['R', 'ar', '/ɑːr/'], ['S', 'ess', '/ɛs/'], ['T', 'tee', '/tiː/'], ['U', 'you', '/juː/'], ['V', 'vee', '/viː/'], ['W', 'double-u', '/ˈdʌb.əl.juː/'], ['X', 'ex', '/ɛks/'], ['Y', 'wy', '/waɪ/'], ['Z', 'zee', '/ziː/'],

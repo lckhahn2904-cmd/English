@@ -18,6 +18,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useGuest } from '../../context/GuestContext'
 import { useVocabulary } from '../../context/VocabularyContext'
 import { guestCourses } from '../../data/guestData'
+import { allA0Lessons } from '../../data/speakingCurriculum'
+import { buildLearningIntelligence } from '../../services/learningIntelligenceService'
+import MotivationDashboardSection from '../../components/dashboard/MotivationDashboardSection'
 import { createVocabularyLessons } from '../../services/vocabularyLessonService'
 
 type VocabularyLessonItem = {
@@ -72,8 +75,8 @@ function StatCard({
 
 export default function DashboardHome() {
   const { user, isAuthenticated } = useAuth()
-  const { isGuest, completedLessonIds, learnedVocabIds, quizScores } = useGuest()
-  const { groups, isLoading, error, refetch } = useVocabulary()
+  const { isGuest, completedLessonIds, learnedVocabIds, quizScores, activeSpeakingLessonId, learningEvidence } = useGuest()
+  const { groups, allWords, isLoading, error, refetch } = useVocabulary()
   const isGuestMode = !isAuthenticated && isGuest
 
   const name = isGuestMode
@@ -146,6 +149,13 @@ export default function DashboardHome() {
   }, [learnedVocabIds, learningSnapshot.vocabularyProgress])
 
   const completedQuizCount = Object.keys(quizScores).length
+  const intelligence = useMemo(() => buildLearningIntelligence({
+    completedLessonIds,
+    activeSpeakingLessonId,
+    learningEvidence,
+    learnedVocabulary: allWords.filter((word) => learnedVocabIds.includes(word.id)).map((word) => word.word),
+    lessons: allA0Lessons,
+  }), [activeSpeakingLessonId, allWords, completedLessonIds, learnedVocabIds, learningEvidence])
   const stats = [
     {
       icon: Trophy,
@@ -312,6 +322,30 @@ export default function DashboardHome() {
             </Link>
           </div>
         </article>
+      </section>
+
+      <MotivationDashboardSection />
+
+      <section className="rounded-2xl border border-indigo-100 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="learning-intelligence-title">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div><p className="text-xs font-bold uppercase tracking-wide text-indigo-700">Learning Intelligence · A0</p><h2 id="learning-intelligence-title" className="mt-1 text-lg font-bold text-gray-900">Học tập theo tiến độ thực tế</h2><p className="mt-1 text-xs leading-5 text-gray-500">Bài hoàn thành và kiến thức thành thạo được theo dõi riêng.</p></div>
+          <Link to="/dashboard/speaking" className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-indigo-200 px-3 text-xs font-semibold text-indigo-700 hover:bg-indigo-50">Mở lộ trình A0 <ArrowRight className="h-3.5 w-3.5" /></Link>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Bài A0 hoàn thành</p><p className="mt-1 text-xl font-bold text-slate-900">{intelligence.completedLessonCount}<span className="text-sm font-medium text-slate-400">/{intelligence.totalLessons}</span></p></div>
+          <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Đơn vị kiến thức đã gặp</p><p className="mt-1 text-xl font-bold text-slate-900">{intelligence.knowledge.filter((item) => item.status !== 'not-started').length}</p></div>
+          <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Lượt kiểm tra kiến thức</p><p className="mt-1 text-xl font-bold text-slate-900">{intelligence.evidenceCount}</p></div>
+          <div className="rounded-xl bg-slate-50 p-3"><p className="text-[11px] text-slate-500">Cần ôn (đủ bằng chứng)</p><p className="mt-1 text-xl font-bold text-slate-900">{intelligence.needsReviewKnowledgeCount}</p></div>
+        </div>
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr]">
+          <article className="rounded-xl border border-blue-100 bg-blue-50/50 p-4"><div className="flex items-center gap-2"><Sparkles className="h-4 w-4 text-blue-700" /><h3 className="text-sm font-bold text-slate-900">Đề xuất tiếp theo</h3></div>
+            {intelligence.recommendations.length > 0 ? <ul className="mt-3 space-y-2">{intelligence.recommendations.slice(0, 3).map((recommendation) => <li key={recommendation.id} className="rounded-lg bg-white p-3"><p className="text-sm font-semibold text-slate-900">{recommendation.activity}</p><p className="mt-1 text-xs leading-5 text-slate-600">Lý do: {recommendation.reason}</p>{recommendation.lessonId && <Link to={`/dashboard/speaking/lesson/${recommendation.lessonId}`} className="mt-2 inline-flex min-h-8 items-center gap-1 text-xs font-semibold text-blue-700 hover:underline">Mở bài luyện <ArrowRight className="h-3 w-3" /></Link>}</li>)}</ul> : <p className="mt-3 rounded-lg bg-white p-3 text-xs leading-5 text-slate-600">Chưa có đề xuất cá nhân hóa dựa trên bằng chứng. Bạn vẫn có thể chọn bất kỳ bài A0 nào.</p>}
+          </article>
+          <article className="rounded-xl border border-slate-200 p-4"><h3 className="text-sm font-bold text-slate-900">Learning insight</h3><p className="mt-2 text-sm leading-6 text-slate-700">{intelligence.insight}</p><p className="mt-2 text-[11px] leading-5 text-slate-500">Thành thạo: {intelligence.masteredKnowledgeCount}. Chỉ được ghi nhận sau kết quả ổn định qua nhiều hoạt động khác nhau; hoàn thành bài học không tự đánh dấu thành thạo.</p>
+            <div className="mt-3 border-t border-slate-100 pt-3"><h4 className="text-xs font-bold text-slate-700">Hoạt động gần đây trong phiên</h4>{learningEvidence.length === 0 ? <p className="mt-1 text-xs leading-5 text-slate-500">Chưa có lượt luyện A0 được ghi nhận trong phiên này.</p> : <ul className="mt-2 space-y-1.5">{learningEvidence.slice(-4).reverse().map((record) => <li key={record.id} className="flex flex-wrap justify-between gap-2 text-xs text-slate-600"><span>{record.activityType === 'speaking-lesson-check' ? 'Kiểm tra bài học' : 'Tự luyện nói'} · {allA0Lessons.find((lesson) => lesson.id === record.lessonId)?.code ?? record.lessonId}{record.outcome === 'self-reported-practice' ? ' · tự ghi nhận' : record.outcome === 'met' ? ' · đạt câu hỏi' : ' · cần hỗ trợ'}</span><time dateTime={record.observedAt}>{new Date(record.observedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</time></li>)}</ul>}</div>
+          </article>
+        </div>
+        <p className="mt-3 text-[11px] leading-5 text-slate-500">Nguồn dữ liệu: tiến độ và lượt luyện A0 trong bộ nhớ phiên, cùng từ vựng bạn đã đánh dấu. Không lưu thời lượng hoặc lịch sử hội thoại; dữ liệu này chưa đồng bộ Supabase và sẽ mất khi tải lại.</p>
       </section>
 
       <p className="text-center text-xs leading-5 text-gray-400">
