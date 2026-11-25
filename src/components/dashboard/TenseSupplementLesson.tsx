@@ -233,6 +233,52 @@ function buildMixedGroups(): QuestionGroup[] {
 
 const mixedGroups = buildMixedGroups()
 
+export interface TenseSupplementPracticeRecord {
+  topicId: string
+  groupTitle: string
+  groupIndex: number
+  questionIndex: number
+  prompt: string
+  answer: string
+  reason: string
+  translation: string
+  choices: string[]
+}
+
+/** Read-only adapter for the existing supplemental tense exercises. */
+export function getTenseSupplementPracticeRecords(topicId: string): TenseSupplementPracticeRecord[] {
+  const groups = topicId === 'be-going-to'
+    ? goingGroups
+    : topicId === 'tense-contrasts'
+      ? contrastGroups
+      : topicId === 'mixed-tense-practice'
+        ? mixedGroups
+        : []
+
+  return groups.flatMap((group, groupIndex) => group.questions.map((question, questionIndex) => {
+    const extras = groupIndex === 0 && topicId === 'tense-contrasts'
+      ? contrastChoiceExtras[Math.floor(questionIndex / 2)] ?? ''
+      : ''
+    const chooseText = question.prompt.match(/Choose:\s*(.*?)(?=\s+C\)|$)/)?.[1] ?? ''
+    const chooseChoices = [...chooseText.matchAll(/(?:^|,\s*)([A-B])\s+(.*?)(?=,\s*[A-B]\s+|$)/g)]
+    const markedChoices = [...`${question.prompt} ${extras}`.matchAll(/([A-D])\)\s*(.*?)(?=\s+[A-D]\)\s*|$)/g)]
+    const choiceMatches = chooseChoices.length ? [...chooseChoices, ...markedChoices] : markedChoices
+    const choices = choiceMatches.map((match) => match[2].trim().replace(/[.]$/, ''))
+
+    return {
+      topicId,
+      groupTitle: group.title,
+      groupIndex,
+      questionIndex,
+      prompt: question.prompt.replace(/\s+[A-D]\)\s.*$/, '').replace(/\s+Choose:.*$/, ''),
+      answer: question.answer,
+      reason: question.reason,
+      translation: question.translation,
+      choices: choices.length > 1 ? choices : [],
+    }
+  }))
+}
+
 const comparisonTopicIds: [string, string][] = [
   ['present-simple', 'present-continuous'], ['present-perfect', 'past-simple'],
   ['present-perfect', 'present-perfect-continuous'], ['past-simple', 'past-continuous'],

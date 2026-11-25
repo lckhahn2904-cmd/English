@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Component, lazy, Suspense, type ReactNode } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import { GuestProvider } from './context/GuestContext'
 import { VocabularyProvider } from './context/VocabularyContext'
@@ -23,10 +24,10 @@ import SpeakingPage from './pages/dashboard/SpeakingPage'
 import ListeningPage from './pages/dashboard/ListeningPage'
 import PronunciationPage from './pages/dashboard/PronunciationPage'
 import CommunicationAssessmentPage from './pages/dashboard/CommunicationAssessmentPage'
+import CommunicationAnalyticsPage from './pages/dashboard/CommunicationAnalyticsPage'
 import SpeakingModulePage from './pages/dashboard/SpeakingModulePage'
 import SpeakingLessonPage from './pages/dashboard/SpeakingLessonPage'
 import ConversationPage from './pages/dashboard/ConversationPage'
-import ExercisesPage from './pages/dashboard/ExercisesPage'
 import SettingsPage from './pages/dashboard/SettingsPage'
 import VocabularyFlashcardPage from './pages/dashboard/VocabularyFlashcardPage'
 import NotificationsPage from './pages/dashboard/NotificationsPage'
@@ -35,6 +36,23 @@ import AdminLayout from './layouts/AdminLayout'
 import AdminOverviewPage from './pages/admin/AdminOverviewPage'
 import AdminContentPage from './pages/admin/AdminContentPage'
 import AdminCommunicationStudioPage from './pages/admin/AdminCommunicationStudioPage'
+
+const ExercisesPage = lazy(() => import('./pages/dashboard/ExercisesPage'))
+
+class ExerciseRouteBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {
+  state = { hasError: false }
+
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div className="mx-auto max-w-3xl rounded-xl border border-rose-200 bg-white p-6"><h2 className="font-bold text-gray-900">Không tải được khu bài tập</h2><p className="mt-1 text-sm text-gray-600">Đã xảy ra lỗi khi mở catalog. Hãy thử tải lại trang.</p><button onClick={() => window.location.reload()} className="mt-4 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white">Tải lại</button></div>
+    }
+    return this.props.children
+  }
+}
 
 function App() {
   return (
@@ -67,10 +85,11 @@ function App() {
               <Route path="speaking/listening/:episodeId" element={<ListeningPage />} />
               <Route path="speaking/pronunciation" element={<PronunciationPage />} />
               <Route path="communication-assessment" element={<CommunicationAssessmentPage />} />
+              <Route path="communication-analytics" element={<CommunicationAnalyticsPage />} />
               <Route path="conversation" element={<ConversationPage />} />
               <Route path="speaking/module/:moduleId" element={<SpeakingModulePage />} />
               <Route path="speaking/lesson/:lessonId" element={<SpeakingLessonPage />} />
-              <Route path="exercises" element={<ExercisesPage />} />
+              <Route path="exercises" element={<ExerciseRouteBoundary><Suspense fallback={<div className="mx-auto max-w-3xl rounded-xl border border-gray-200 bg-white p-6 text-sm text-gray-600">Đang tải danh mục bài tập…</div>}><ExercisesPage /></Suspense></ExerciseRouteBoundary>} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="notifications" element={<NotificationsPage />} />
             </Route>
